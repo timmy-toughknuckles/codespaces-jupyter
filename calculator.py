@@ -4,16 +4,16 @@ print('What would you like me to do?')
 def bob_is_sigma(expr):
     if '+' in expr:
         a = expr.split('+')
-        print(int(a[0])+int(a[1]))
+        print(float(a[0])+float(a[1]))
     elif '-' in expr:
         b = expr.split('-')
-        print(int(b[0])-int(b[1]))
+        print(float(b[0])-float(b[1]))
     elif '*' in expr:
         c = expr.split('*')
-        print(int(c[0])*int(c[1]))
+        print(float(c[0])*float(c[1]))
     elif '/' in expr:
         d = expr.split('/')
-        print(int(c[0])/int(c[1]))
+        print(float(d[0])/float(d[1]))
 
 
 
