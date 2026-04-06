@@ -1,0 +1,12 @@
+a = input("How many pennies do you have?: ")
+b = input("How many nickles do you have?: ")
+c = input("How many dimes do you have?: ")
+d = input("How many quarters do you have?: ")
+e = input("How many $1 bills do you have?: ")
+f = input("How many $5 bills do you have?: ")
+g = input("How many $10 bills do you have?: ")
+h = input("How many $20 bills do you have?: ")
+i = input("How many $50 bills do you have?: ")
+j = input("How many $100 bills do you have?: ")
+
+print(f"You have ${int(a) * 0.01 + int(b) * 0.05 + int(c) * 0.1 + int(d) * 0.25 + int(e) * 1 + int(f) * 5 + int(g) * 10 + int(h) * 20 + int(i) * 50 + int(j) * 100:.2f} in total.")
