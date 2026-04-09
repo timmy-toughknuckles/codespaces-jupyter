@@ -1,0 +1,11 @@
+print("1 + 1 = "+ str(1+1))
+print("This is just a sentence.")
+print("50 x 50 is", end=" ")
+print(str(50*50))
+print("Go KIDOYO!!!!")
+print("Welcome!")
+print("1.5 / 3 =", str(float(1.5/3)))
+for i in range(10):
+    print(i, end=" ")
+print()
+print("Let's code!"+"This is kidOYO!")
