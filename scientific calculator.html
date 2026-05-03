@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scientific Calculator</title>
+  <style>
+    :root {
+      --background: #141414;
+      --panel: #1f1f1f;
+      --text: #f1f1f1;
+      --accent: #4f9cff;
+      --accent-2: #76e3ff;
+      --danger: #ef476f;
+      --button: #2d2d2d;
+      --button-hover: #3a3a3a;
+      --button-active: #4f9cff;
+      --shadow: rgba(0, 0, 0, 0.5);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, system-ui, sans-serif;
+      background: radial-gradient(circle at top, #383e56 0%, #141414 45%);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 24px;
+    }
+
+    .calculator {
+      width: min(500px, 100%);
+      background: var(--panel);
+      border-radius: 24px;
+      box-shadow: 0 20px 60px var(--shadow);
+      overflow: hidden;
+    }
+
+    .calculator__screen {
+      padding: 28px 24px 20px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .calculator__display {
+      width: 100%;
+      border: none;
+      outline: none;
+      background: transparent;
+      color: var(--text);
+      font-size: clamp(2rem, 4vw, 3.5rem);
+      text-align: right;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      padding: 0;
+    }
+
+    .calculator__buttons {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+      padding: 24px;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 18px;
+      padding: 18px 16px;
+      background: var(--button);
+      color: var(--text);
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s ease, transform 0.1s ease;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.18);
+    }
+
+    .btn:hover {
+      background: var(--button-hover);
+    }
+
+    .btn:active {
+      transform: translateY(1px);
+      background: var(--button-active);
+      color: #fff;
+    }
+
+    .btn--wide {
+      grid-column: span 2;
+    }
+
+    .btn--secondary {
+      background: rgba(255,255,255,0.06);
+      color: #d1d1d1;
+    }
+
+    .btn--accent {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .btn--accent:hover {
+      background: var(--accent-2);
+    }
+
+    .btn--danger {
+      background: var(--danger);
+      color: #fff;
+    }
+
+    @media (max-width: 520px) {
+      .calculator {
+        border-radius: 20px;
+      }
+
+      .calculator__buttons {
+        padding: 18px;
+        gap: 10px;
+      }
+
+      .btn {
+        padding: 16px 12px;
+      }
+
+      .calculator__display {
+        font-size: 2.6rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="calculator" aria-label="Scientific calculator">
+    <section class="calculator__screen">
+      <input id="display" class="calculator__display" type="text" value="0" aria-label="Calculator display" readonly />
+    </section>
+
+    <section class="calculator__buttons">
+      <button class="btn btn--secondary" data-action="clear">C</button>
+      <button class="btn btn--secondary" data-action="delete">⌫</button>
+      <button class="btn btn--secondary" data-value="(">(</button>
+      <button class="btn btn--secondary" data-value=")">)</button>
+      <button class="btn btn--accent" data-value="÷">÷</button>
+
+      <button class="btn btn--secondary" data-value="sin(">sin</button>
+      <button class="btn btn--secondary" data-value="cos(">cos</button>
+      <button class="btn btn--secondary" data-value="tan(">tan</button>
+      <button class="btn btn--secondary" data-value="^">^</button>
+      <button class="btn btn--accent" data-value="×">×</button>
+
+      <button class="btn btn--secondary" data-value="asin(">asin</button>
+      <button class="btn btn--secondary" data-value="acos(">acos</button>
+      <button class="btn btn--secondary" data-value="atan(">atan</button>
+      <button class="btn btn--secondary" data-value="sqrt(">√</button>
+      <button class="btn btn--accent" data-value="-">−</button>
+
+      <button class="btn" data-value="7">7</button>
+      <button class="btn" data-value="8">8</button>
+      <button class="btn" data-value="9">9</button>
+      <button class="btn btn--secondary" data-value="ln(">ln</button>
+      <button class="btn btn--accent" data-value="+">+</button>
+
+      <button class="btn" data-value="4">4</button>
+      <button class="btn" data-value="5">5</button>
+      <button class="btn" data-value="6">6</button>
+      <button class="btn btn--secondary" data-value="log(">log</button>
+      <button class="btn btn--secondary" data-value="exp(">eˣ</button>
+
+      <button class="btn" data-value="1">1</button>
+      <button class="btn" data-value="2">2</button>
+      <button class="btn" data-value="3">3</button>
+      <button class="btn btn--secondary" data-value="pi">π</button>
+      <button class="btn btn--secondary" data-value="e">e</button>
+
+      <button class="btn btn--wide" data-value="0">0</button>
+      <button class="btn" data-value=".">.</button>
+      <button class="btn btn--accent" data-action="calculate">=</button>
+    </section>
+  </main>
+
+  <script>
+    const display = document.getElementById('display');
+    const buttons = document.querySelectorAll('[data-value], [data-action]');
+
+    const operators = new Set(['+', '-', '×', '÷', '^']);
+
+    function updateDisplay(value) {
+      display.value = value;
+    }
+
+    function appendValue(value) {
+      if (display.value === '0' && value !== '.' && !display.value.endsWith(')')) {
+        if (value === '+' || value === '-' || value === '×' || value === '÷' || value === '^') {
+          display.value = '0' + value;
+          return;
+        }
+        display.value = value;
+        return;
+      }
+      display.value += value;
+    }
+
+    function clearDisplay() {
+      display.value = '0';
+    }
+
+    function deleteLast() {
+      if (display.value.length === 1 || display.value === 'Error') {
+        display.value = '0';
+      } else {
+        display.value = display.value.slice(0, -1);
+      }
+    }
+
+    function calculateResult() {
+      try {
+        const expression = sanitizeExpression(display.value);
+        const result = new Function('return ' + expression)();
+        if (result === undefined || Number.isNaN(result) || !Number.isFinite(result)) {
+          display.value = 'Error';
+        } else {
+          display.value = String(result);
+        }
+      } catch (error) {
+        display.value = 'Error';
+      }
+    }
+
+    function sanitizeExpression(input) {
+      return input
+        .replace(/×/g, '*')
+        .replace(/÷/g, '/')
+        .replace(/\bpi\b/g, 'Math.PI')
+        .replace(/\be\b/g, 'Math.E')
+        .replace(/\^/g, '**')
+        .replace(/\bln\(/g, 'Math.log(')
+        .replace(/\blog\(/g, 'Math.log10(')
+        .replace(/\bexp\(/g, 'Math.exp(')
+        .replace(/\bsqrt\(/g, 'Math.sqrt(')
+        .replace(/\bsin\(/g, 'Math.sin(')
+        .replace(/\bcos\(/g, 'Math.cos(')
+        .replace(/\btan\(/g, 'Math.tan(')
+        .replace(/\basin\(/g, 'Math.asin(')
+        .replace(/\bacos\(/g, 'Math.acos(')
+        .replace(/\batan\(/g, 'Math.atan(');
+    }
+
+    buttons.forEach(button => {
+      button.addEventListener('click', () => {
+        const value = button.dataset.value;
+        const action = button.dataset.action;
+
+        if (action === 'clear') {
+          clearDisplay();
+          return;
+        }
+
+        if (action === 'delete') {
+          deleteLast();
+          return;
+        }
+
+        if (action === 'calculate') {
+          calculateResult();
+          return;
+        }
+
+        if (value) {
+          appendValue(value);
+        }
+      });
+    });
+
+    window.addEventListener('keydown', event => {
+      const key = event.key;
+      const allowedKeys = '0123456789.+-*/^()';
+
+      if (allowedKeys.includes(key)) {
+        event.preventDefault();
+        const mapped = key === '*' ? '×' : key === '/' ? '÷' : key;
+        appendValue(mapped);
+        return;
+      }
+
+      if (key === 'Enter' || key === '=') {
+        event.preventDefault();
+        calculateResult();
+        return;
+      }
+
+      if (key === 'Backspace') {
+        event.preventDefault();
+        deleteLast();
+        return;
+      }
+
+      if (key.toLowerCase() === 'c') {
+        event.preventDefault();
+        clearDisplay();
+      }
+    });
+  </script>
+</body>
+</html>
