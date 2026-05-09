@@ -3,358 +3,402 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Slope Game</title>
+    <title>Slope</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
+        html,
         body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background: #1a1a1a;
-            font-family: Arial, sans-serif;
-            overflow: hidden;
-        }
-        
-        #gameContainer {
-            position: relative;
-            width: 800px;
-            height: 600px;
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            border: 3px solid #fff;
-            overflow: hidden;
-        }
-        
-        canvas {
-            display: block;
-            background: linear-gradient(to bottom, #87ceeb 0%, #1e3c72 100%);
-        }
-        
-        #ui {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            color: white;
-            font-size: 24px;
-            z-index: 10;
-        }
-        
-        #score {
-            margin-bottom: 10px;
-        }
-        
-        #gameOverScreen {
-            position: absolute;
-            top: 0;
-            left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.8);
+            overflow: hidden;
+            background: #02070f;
+            font-family: Arial, sans-serif;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            background: #02070f;
+        }
+
+        #gameOverOverlay {
+            position: absolute;
+            inset: 0;
             display: none;
             justify-content: center;
             align-items: center;
-            flex-direction: column;
-            z-index: 20;
-            color: white;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 50;
+        }
+
+        #gameOverContent {
             text-align: center;
+            color: #fff;
+            padding: 24px 40px;
+            border: 2px solid #0f8;
+            border-radius: 14px;
+            backdrop-filter: blur(10px);
         }
-        
-        #gameOverScreen h1 {
-            font-size: 48px;
-            margin-bottom: 20px;
-            color: #ff6b6b;
+
+        #gameOverContent h1 {
+            font-size: 72px;
+            letter-spacing: 4px;
+            margin-bottom: 16px;
+            color: #f14e4e;
+            text-shadow: 0 0 20px rgba(241, 78, 78, 0.6);
         }
-        
-        #gameOverScreen p {
-            font-size: 24px;
-            margin-bottom: 30px;
+
+        #gameOverContent p {
+            font-size: 28px;
+            margin-bottom: 22px;
+            color: #0f8;
         }
-        
-        #gameOverScreen button {
-            padding: 15px 40px;
-            font-size: 20px;
-            background: #4CAF50;
-            color: white;
+
+        #gameOverContent button {
             border: none;
-            border-radius: 5px;
+            background: #0f8;
+            color: #000;
+            font-size: 20px;
+            font-weight: bold;
+            padding: 14px 32px;
+            border-radius: 10px;
             cursor: pointer;
-            transition: background 0.3s;
+            transition: transform 0.2s ease, background 0.2s ease;
         }
-        
-        #gameOverScreen button:hover {
-            background: #45a049;
-        }
-        
-        #instructions {
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-            color: white;
-            font-size: 14px;
-            text-align: right;
+
+        #gameOverContent button:hover {
+            background: #7fffd4;
+            transform: scale(1.03);
         }
     </style>
 </head>
 <body>
-    <div id="gameContainer">
-        <canvas id="gameCanvas" width="800" height="600"></canvas>
-        <div id="ui">
-            <div id="score">Score: 0</div>
-            <div id="speed">Speed: 5</div>
-        </div>
-        <div id="gameOverScreen">
-            <h1>GAME OVER!</h1>
-            <p id="finalScore">Final Score: 0</p>
+    <canvas id="gameCanvas"></canvas>
+    <div id="gameOverOverlay">
+        <div id="gameOverContent">
+            <h1>GAME OVER</h1>
+            <p>Score: <span id="finalScore">0</span></p>
+            <p>High Score: <span id="highScore">0</span></p>
             <button onclick="location.reload()">Play Again</button>
-        </div>
-        <div id="instructions">
-            Use LEFT/RIGHT arrows or A/D to move<br>
-            Avoid red obstacles!
         </div>
     </div>
 
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
-        
-        // Game variables
-        let gameRunning = true;
-        let score = 0;
-        let gameSpeed = 5;
-        let maxSpeed = 15;
-        
-        // Player (ball)
-        const player = {
-            x: canvas.width / 2,
-            y: canvas.height - 80,
-            radius: 15,
-            width: 30,
-            velocity: 0,
-            speed: 0
-        };
-        
-        // Game state
-        let obstacles = [];
-        let particles = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        const horizon = 0.28;
+        const roadHalf = 260;
+        const laneOffset = 90;
+        const maxSpeed = 18;
+
         let cameraZ = 0;
-        let perspectiveZ = 500;
-        
-        // Input handling
+        let score = 0;
+        let gameRunning = true;
+        let highScore = parseInt(localStorage.getItem('slopeHighScore')) || 0;
+
+        const player = {
+            x: 0,
+            vx: 0,
+            radius: 16,
+            maxX: roadHalf - 40
+        };
+
+        const segments = [];
         const keys = {};
-        window.addEventListener('keydown', (e) => {
-            keys[e.key] = true;
-            if (e.key === ' ') e.preventDefault();
+        const lanePositions = [-laneOffset, 0, laneOffset];
+        const segmentLength = 160;
+        const visibleDistance = 2600;
+        let totalSegmentsCreated = 0;
+
+        window.addEventListener('keydown', (event) => {
+            keys[event.key.toLowerCase()] = true;
         });
-        window.addEventListener('keyup', (e) => {
-            keys[e.key] = false;
+
+        window.addEventListener('keyup', (event) => {
+            keys[event.key.toLowerCase()] = false;
         });
-        
-        // Obstacle class
-        class Obstacle {
-            constructor(x, z, width, height) {
-                this.x = x;
-                this.z = z;
-                this.width = width;
-                this.height = height;
-                this.screenX = 0;
-                this.screenY = 0;
-                this.screenWidth = 0;
+
+        function getCenterX() {
+            return canvas.width / 2;
+        }
+
+        function getHorizonY() {
+            return canvas.height * horizon;
+        }
+
+        function project(x, z) {
+            const depth = z - cameraZ;
+            if (depth <= 0.1) return null;
+
+            const scale = 1000 / (depth + 1000);
+            const x2d = getCenterX() + x * scale;
+            const y2d = getHorizonY() + scale * (canvas.height - getHorizonY());
+            return { x: x2d, y: y2d, scale };
+        }
+
+        function createSegment(z) {
+            const xOffset = (Math.random() - 0.5) * 120;
+            const obstacles = [];
+            if (totalSegmentsCreated >= 10 && Math.random() < 0.2 / 3) {
+                const x = (Math.random() - 0.5) * (roadHalf * 2 - 70);
+                obstacles.push({
+                    x: x,
+                    z: z + segmentLength * 0.5,
+                    size: 70
+                });
             }
-            
-            update() {
-                // Calculate screen position based on perspective
-                const perspective = perspectiveZ / (this.z + perspectiveZ);
-                this.screenX = (this.x - player.x) * perspective + canvas.width / 2;
-                this.screenY = (this.z - cameraZ) * 0.5 + canvas.height / 2;
-                this.screenWidth = this.width * perspective;
-            }
-            
-            draw() {
-                if (this.screenY < canvas.height && this.screenY > -100) {
-                    ctx.fillStyle = '#ff4444';
-                    ctx.fillRect(
-                        this.screenX - this.screenWidth / 2,
-                        this.screenY,
-                        this.screenWidth,
-                        this.height * 0.5
-                    );
-                }
-            }
-            
-            isOffScreen() {
-                return this.screenY > canvas.height + 100;
+            totalSegmentsCreated++;
+            return { z, xOffset, obstacles };
+        }
+
+        function initMap() {
+            let z = cameraZ;
+            while (z < cameraZ + visibleDistance) {
+                segments.push(createSegment(z));
+                z += segmentLength;
             }
         }
-        
-        // Particle class for effects
-        class Particle {
-            constructor(x, y) {
-                this.x = x;
-                this.y = y;
-                this.vx = (Math.random() - 0.5) * 8;
-                this.vy = Math.random() * -8 - 2;
-                this.life = 1;
+
+        function updateMap() {
+            while (segments.length && segments[0].z < cameraZ - segmentLength) {
+                segments.shift();
             }
-            
-            update() {
-                this.x += this.vx;
-                this.y += this.vy;
-                this.vy -= 0.1; // gravity
-                this.life -= 0.02;
-            }
-            
-            draw() {
-                ctx.fillStyle = `rgba(255, 69, 0, ${this.life})`;
-                ctx.fillRect(this.x, this.y, 4, 4);
+            let nextZ = segments.length ? segments[segments.length - 1].z + segmentLength : cameraZ;
+            while (nextZ < cameraZ + visibleDistance) {
+                segments.push(createSegment(nextZ));
+                nextZ += segmentLength;
             }
         }
-        
-        // Generate obstacles
-        function generateObstacles() {
-            if (Math.random() < 0.02) {
-                const size = Math.random() < 0.5 ? 60 : 80;
-                const laneIndex = Math.floor(Math.random() * 3); // 3 lanes
-                const laneX = (laneIndex - 1) * 100;
-                obstacles.push(new Obstacle(laneX, cameraZ + 1000, size, 40));
-            }
-        }
-        
-        // Check collision
+
         function checkCollision() {
-            for (let obstacle of obstacles) {
-                const distX = Math.abs(player.x - obstacle.x);
-                const distY = Math.abs(player.y - (obstacle.screenY || 0));
-                
-                // Simple AABB collision
-                if (distX < (player.radius + obstacle.width / 2) &&
-                    cameraZ + 300 < obstacle.z && obstacle.z < cameraZ + 400) {
-                    return true;
+            for (const segment of segments) {
+                for (const obs of segment.obstacles) {
+                    const depth = obs.z - cameraZ;
+                    if (depth > 20 && depth < 120) {
+                        if (Math.abs(player.x - obs.x) < 55) {
+                            return true;
+                        }
+                    }
                 }
             }
             return false;
         }
-        
-        // Update function
+
         function update() {
             if (!gameRunning) return;
-            
-            // Player movement
-            const moveSpeed = 8;
-            if (keys['ArrowLeft'] || keys['a'] || keys['A']) {
-                player.x -= moveSpeed;
+
+            player.vx = 0;
+            if (keys['arrowleft'] || keys['a']) player.vx -= 0.375;
+            if (keys['arrowright'] || keys['d']) player.vx += 0.375;
+
+            player.x += player.vx;
+
+            const currentRoadCenter = segments.length ? segments[0].xOffset : 0;
+            const offRoad = Math.abs(player.x - currentRoadCenter) > roadHalf - player.radius;
+            const speed = Math.min(6 + score * 0.008, maxSpeed);
+            cameraZ += speed;
+
+            updateMap();
+
+            if (offRoad || checkCollision()) {
+                gameRunning = false;
+                const finalScore = Math.floor(score / 10);
+                if (finalScore > highScore) {
+                    highScore = finalScore;
+                    localStorage.setItem('slopeHighScore', highScore);
+                }
+                document.getElementById('finalScore').textContent = finalScore;
+                document.getElementById('highScore').textContent = highScore;
+                document.getElementById('gameOverOverlay').style.display = 'flex';
             }
-            if (keys['ArrowRight'] || keys['d'] || keys['D']) {
-                player.x += moveSpeed;
-            }
-            
-            // Boundary collision
-            if (player.x < -canvas.width / 4) player.x = -canvas.width / 4;
-            if (player.x > canvas.width / 4) player.x = canvas.width / 4;
-            
-            // Increase speed and score
-            gameSpeed = Math.min(5 + score / 50, maxSpeed);
+
             score += 1;
-            
-            // Update camera
-            cameraZ += gameSpeed;
-            
-            // Update obstacles
-            obstacles.forEach(obs => obs.update());
-            obstacles = obstacles.filter(obs => !obs.isOffScreen());
-            
-            // Update particles
-            particles.forEach(p => p.update());
-            particles = particles.filter(p => p.life > 0);
-            
-            // Generate new obstacles
-            generateObstacles();
-            
-            // Check collision
-            if (checkCollision()) {
-                endGame();
-            }
-            
-            // Update UI
-            document.getElementById('score').textContent = 'Score: ' + Math.floor(score / 10);
-            document.getElementById('speed').textContent = 'Speed: ' + Math.floor(gameSpeed);
         }
-        
-        // Draw function
-        function draw() {
-            // Draw gradient background
+
+        function drawBackground() {
             const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-            gradient.addColorStop(0, '#87ceeb');
-            gradient.addColorStop(1, '#1e3c72');
+            gradient.addColorStop(0, '#02070f');
+            gradient.addColorStop(0.35, '#001222');
+            gradient.addColorStop(1, '#000608');
             ctx.fillStyle = gradient;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            // Draw floor/slope
-            ctx.fillStyle = '#333333';
-            ctx.beginPath();
-            ctx.moveTo(0, canvas.height / 2);
-            ctx.lineTo(canvas.width, canvas.height / 2 + 100);
-            ctx.lineTo(canvas.width, canvas.height);
-            ctx.lineTo(0, canvas.height);
-            ctx.fill();
-            
-            // Draw lane lines
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
-            ctx.lineWidth = 2;
-            for (let i = 0; i < 3; i++) {
-                const x = (i - 1) * 100 + canvas.width / 2;
+        }
+
+        function drawRoad() {
+            for (let i = 0; i < segments.length - 1; i++) {
+                const current = segments[i];
+                const next = segments[i + 1];
+                const left = project(current.xOffset - roadHalf, current.z);
+                const right = project(current.xOffset + roadHalf, current.z);
+                const nextLeft = project(next.xOffset - roadHalf, next.z);
+                const nextRight = project(next.xOffset + roadHalf, next.z);
+                if (!left || !right || !nextLeft || !nextRight) continue;
+
+                ctx.fillStyle = i % 2 === 0 ? 'rgba(0, 70, 0, 0.28)' : 'rgba(0, 90, 0, 0.2)';
                 ctx.beginPath();
-                ctx.moveTo(x, 0);
-                ctx.lineTo(x, canvas.height);
+                ctx.moveTo(left.x, left.y);
+                ctx.lineTo(right.x, right.y);
+                ctx.lineTo(nextRight.x, nextRight.y);
+                ctx.lineTo(nextLeft.x, nextLeft.y);
+                ctx.closePath();
+                ctx.fill();
+            }
+
+            ctx.strokeStyle = '#0f8';
+            ctx.lineWidth = 2;
+            for (const segment of segments) {
+                const left = project(segment.xOffset - roadHalf, segment.z);
+                const right = project(segment.xOffset + roadHalf, segment.z);
+                if (!left || !right) continue;
+                ctx.beginPath();
+                ctx.moveTo(left.x, left.y);
+                ctx.lineTo(right.x, right.y);
                 ctx.stroke();
             }
-            
-            // Draw obstacles
-            obstacles.forEach(obs => obs.draw());
-            
-            // Draw player (ball)
-            const gradient2 = ctx.createRadialGradient(
-                player.x - 5, player.y - 5, 2,
-                player.x, player.y, player.radius
-            );
-            gradient2.addColorStop(0, '#ffff00');
-            gradient2.addColorStop(1, '#ff8800');
-            ctx.fillStyle = gradient2;
-            ctx.beginPath();
-            ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.strokeStyle = '#ffffff';
-            ctx.lineWidth = 2;
-            ctx.stroke();
-            
-            // Draw particles
-            particles.forEach(p => p.draw());
         }
-        
-        // End game
-        function endGame() {
-            gameRunning = false;
-            document.getElementById('finalScore').textContent = 'Final Score: ' + Math.floor(score / 10);
-            document.getElementById('gameOverScreen').style.display = 'flex';
-            
-            // Particles explosion
-            for (let i = 0; i < 30; i++) {
-                particles.push(new Particle(player.x, player.y));
+
+        function drawGridLines() {
+            ctx.strokeStyle = '#0f8';
+            ctx.lineWidth = 1;
+            ctx.globalAlpha = 0.6;
+
+            const startZ = cameraZ + 100;
+            const endZ = cameraZ + 2500;
+            const step = 80;
+
+            for (let lane = -4; lane <= 4; lane++) {
+                const x = lane * 70;
+                let previous = project(x, startZ);
+                for (let z = startZ + step; z <= endZ; z += step) {
+                    const current = project(x, z);
+                    if (!previous || !current) break;
+                    ctx.beginPath();
+                    ctx.moveTo(previous.x, previous.y);
+                    ctx.lineTo(current.x, current.y);
+                    ctx.stroke();
+                    previous = current;
+                }
+            }
+
+            ctx.globalAlpha = 1;
+        }
+
+        function drawObstacles() {
+            for (const segment of segments) {
+                for (const obs of segment.obstacles) {
+                    const frontLeft = project(obs.x - obs.size / 2, obs.z);
+                    const frontRight = project(obs.x + obs.size / 2, obs.z);
+                    const backLeft = project(obs.x - obs.size / 2, obs.z + obs.size);
+                    const backRight = project(obs.x + obs.size / 2, obs.z + obs.size);
+                    if (!frontLeft || !frontRight || !backLeft || !backRight) continue;
+
+                    ctx.fillStyle = 'rgba(240, 60, 60, 0.82)';
+                    ctx.beginPath();
+                    ctx.moveTo(backLeft.x, backLeft.y);
+                    ctx.lineTo(backRight.x, backRight.y);
+                    ctx.lineTo(frontRight.x, frontRight.y);
+                    ctx.lineTo(frontLeft.x, frontLeft.y);
+                    ctx.closePath();
+                    ctx.fill();
+
+                    const frontBottomLeft = { x: frontLeft.x, y: frontLeft.y + obs.size * frontLeft.scale };
+                    const frontBottomRight = { x: frontRight.x, y: frontRight.y + obs.size * frontRight.scale };
+
+                    ctx.fillStyle = 'rgba(200, 20, 20, 0.95)';
+                    ctx.beginPath();
+                    ctx.moveTo(frontLeft.x, frontLeft.y);
+                    ctx.lineTo(frontRight.x, frontRight.y);
+                    ctx.lineTo(frontBottomRight.x, frontBottomRight.y);
+                    ctx.lineTo(frontBottomLeft.x, frontBottomLeft.y);
+                    ctx.closePath();
+                    ctx.fill();
+
+                    ctx.strokeStyle = '#ff8a8a';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(backLeft.x, backLeft.y);
+                    ctx.lineTo(backRight.x, backRight.y);
+                    ctx.lineTo(frontRight.x, frontRight.y);
+                    ctx.lineTo(frontLeft.x, frontLeft.y);
+                    ctx.closePath();
+                    ctx.stroke();
+
+                    ctx.beginPath();
+                    ctx.moveTo(frontLeft.x, frontLeft.y);
+                    ctx.lineTo(frontBottomLeft.x, frontBottomLeft.y);
+                    ctx.moveTo(frontRight.x, frontRight.y);
+                    ctx.lineTo(frontBottomRight.x, frontBottomRight.y);
+                    ctx.stroke();
+                }
             }
         }
-        
-        // Game loop
+
+        function drawBall() {
+            const ballX = getCenterX() + player.x * 0.75;
+            const ballY = canvas.height * 0.82;
+
+            const gradient = ctx.createRadialGradient(ballX - 10, ballY - 10, 5, ballX, ballY, player.radius * 1.8);
+            gradient.addColorStop(0, '#fff9a8');
+            gradient.addColorStop(0.45, '#ffdd55');
+            gradient.addColorStop(1, '#ff8d00');
+
+            ctx.fillStyle = gradient;
+            ctx.shadowColor = 'rgba(255, 155, 0, 0.45)';
+            ctx.shadowBlur = 18;
+            ctx.beginPath();
+            ctx.arc(ballX, ballY, player.radius, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(ballX, ballY, player.radius, 0, Math.PI * 2);
+            ctx.stroke();
+        }
+
+        function drawScore() {
+            const scoreText = 'SCORE: ' + Math.floor(score / 10);
+            ctx.font = 'bold 42px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillStyle = '#0f8';
+            ctx.shadowColor = 'rgba(0, 255, 136, 0.4)';
+            ctx.shadowBlur = 14;
+            ctx.fillText(scoreText, canvas.width / 2, 60);
+            ctx.shadowBlur = 0;
+        }
+
+        function draw() {
+            drawBackground();
+            drawRoad();
+            drawGridLines();
+            drawObstacles();
+            drawBall();
+            drawScore();
+        }
+
         function gameLoop() {
             update();
             draw();
             requestAnimationFrame(gameLoop);
         }
-        
-        // Start game
+
+        initMap();
         gameLoop();
     </script>
 </body>
