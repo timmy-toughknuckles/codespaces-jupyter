@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fidget Orbit</title>
+    <link rel="stylesheet" href="./styles/site.css" />
+    <script type="module" src="./scripts/app.js" defer></script>
+  </head>
+  <body data-page="home">
+    <header class="site-header">
+      <a class="brand" href="./index.html">Fidget Orbit</a>
+      <nav class="site-nav" aria-label="Primary">
+        <a href="#catalog">Shop</a>
+        <a href="#why">Why it works</a>
+        <a href="./admin.html">Admin</a>
+      </nav>
+    </header>
+
+    <main id="main-content">
+      <section class="hero">
+        <div class="hero-copy-block">
+          <p class="eyebrow">Quiet focus tools for school bags and desk trays</p>
+          <h1>Small fidgets. Big calm.</h1>
+          <p class="hero-copy">
+            Lightweight toys picked for Chromebook users, classroom breaks, and
+            quick browsing on smaller screens.
+          </p>
+          <div class="hero-actions">
+            <a class="button button-primary" href="#catalog">Browse toys</a>
+            <a class="button button-ghost" href="#why">See why it works</a>
+          </div>
+        </div>
+        <aside class="hero-panel" aria-label="Store highlights">
+          <div class="hero-panel-icon">
+            <img src="./assets/icons/spark.svg" alt="" />
+          </div>
+          <p class="eyebrow">Built for easy browsing</p>
+          <ul class="detail-list">
+            <li>Fast static pages</li>
+            <li>Large tap targets</li>
+            <li>Simple product details</li>
+          </ul>
+        </aside>
+      </section>
+
+      <section class="why-strip" id="why" aria-label="Store benefits">
+        <article>
+          <h2>Fast pages</h2>
+          <p>No heavy framework. Just quick static files.</p>
+        </article>
+        <article>
+          <h2>Easy browsing</h2>
+          <p>Large buttons, simple copy, and card-first navigation.</p>
+        </article>
+        <article>
+          <h2>Kid-safe info</h2>
+          <p>Each item includes age notes, feel, and quietness level.</p>
+        </article>
+      </section>
+
+      <section class="catalog-section" id="catalog">
+        <div class="section-heading">
+          <p class="eyebrow">Catalog</p>
+          <h2>Pick a fidget by feel</h2>
+          <p class="section-copy">
+            Browse by noise level, texture, and backpack-friendly size.
+          </p>
+        </div>
+        <div
+          id="product-grid"
+          class="product-grid"
+          aria-live="polite"
+          aria-busy="true"
+        >
+          <p class="status-card">Loading catalog...</p>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

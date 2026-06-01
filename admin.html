@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin | Fidget Orbit</title>
+    <link rel="stylesheet" href="./styles/site.css" />
+    <script type="module" src="./scripts/admin.js" defer></script>
+  </head>
+  <body data-page="admin">
+    <header class="site-header">
+      <a class="brand" href="./index.html">Fidget Orbit</a>
+      <nav class="site-nav" aria-label="Primary">
+        <a href="./index.html#catalog">Shop</a>
+        <a href="./product.html?id=nebula-loop">Product page</a>
+      </nav>
+    </header>
+
+    <main class="admin-shell" aria-live="polite">
+      <section class="admin-card">
+        <p class="eyebrow">Admin</p>
+        <h1 class="admin-title">Order viewer</h1>
+        <p class="admin-help">
+          Sign in with the static password to read all saved browser orders.
+        </p>
+        <form class="admin-form" data-admin-form>
+          <label class="order-label" for="admin-password">Password</label>
+          <div class="order-row">
+            <input
+              class="order-input"
+              id="admin-password"
+              name="password"
+              type="password"
+              placeholder="Enter admin password"
+              required
+            />
+            <button class="button button-primary" type="submit">Login</button>
+          </div>
+          <p class="order-status" data-admin-status aria-live="polite"></p>
+        </form>
+      </section>
+
+      <section class="admin-orders" data-admin-orders hidden></section>
+    </main>
+  </body>
+</html>

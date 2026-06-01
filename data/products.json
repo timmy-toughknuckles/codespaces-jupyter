@@ -1,0 +1,47 @@
+[
+  {
+    "id": "nebula-loop",
+    "name": "Nebula Loop",
+    "price": 12,
+    "quietLevel": "quiet",
+    "ageRange": "8+",
+    "category": "ring",
+    "tagline": "A smooth rolling ring for under-desk focus.",
+    "description": "Soft silicone beads glide around a flexible loop for low-noise movement during homework or class breaks.",
+    "image": "./assets/products/nebula-loop.jpg",
+    "imageAlt": "Illustration of the Nebula Loop fidget ring with colorful rolling beads.",
+    "colors": ["Citrus", "Sky", "Graphite"],
+    "features": ["Silent rolling motion", "Pocket-friendly size", "Washable silicone"],
+    "gradient": "sunrise"
+  },
+  {
+    "id": "pixel-pop-pad",
+    "name": "Pixel Pop Pad",
+    "price": 16,
+    "quietLevel": "medium",
+    "ageRange": "6+",
+    "category": "popper",
+    "tagline": "Bright pops with a sturdy square shape.",
+    "description": "A compact silicone grid that gives tactile feedback without taking over a Chromebook tray table.",
+    "image": "./assets/products/pixel-pop-pad.jpg",
+    "imageAlt": "Illustration of the Pixel Pop Pad with colorful popping bubbles.",
+    "colors": ["Lime", "Berry", "Ocean"],
+    "features": ["Easy wipe-clean surface", "Thumb-sized bubbles", "Travel-ready shape"],
+    "gradient": "arcade"
+  },
+  {
+    "id": "comet-click-chain",
+    "name": "Comet Click Chain",
+    "price": 10,
+    "quietLevel": "medium",
+    "ageRange": "10+",
+    "category": "chain",
+    "tagline": "A linked click toy with just enough texture.",
+    "description": "Rotating links provide repeatable motion for busy hands and quick reset between tasks.",
+    "image": "./assets/products/comet-click-chain.jpg",
+    "imageAlt": "Illustration of the Comet Click Chain with linked textured loops.",
+    "colors": ["Steel", "Coral"],
+    "features": ["Textured grip", "Clip-on loop", "Built for backpacks"],
+    "gradient": "ember"
+  }
+]
